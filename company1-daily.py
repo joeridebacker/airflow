@@ -12,7 +12,7 @@ def lilyCommand(command: str, dnaEntityType: str = None) -> BashOperator:
     if dnaEntityType is None:
         task_id = command
         args = ""
-    else
+    else:
         task_id = dnaEntityType + "-" + command
         args = "--dna-entity-type " + dnaEntityType
 
