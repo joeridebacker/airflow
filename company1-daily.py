@@ -8,7 +8,7 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 
 
-def lilyCommand(command: str, dnaEntityType: str = None) -> BashOperator:
+def lilyCommand(tenant: str, command: str, dnaEntityType: str = None) -> BashOperator:
     if dnaEntityType is None:
         task_id = command
         args = ""
@@ -18,7 +18,15 @@ def lilyCommand(command: str, dnaEntityType: str = None) -> BashOperator:
 
     return BashOperator(
         task_id=task_id,
-        bash_command="lily " + command + " -conf /lily/tenant/company1/system-config/lily-site.xml " + args,
+        bash_command="lily " + command + " -conf /tmp/" + tenant + "/lily-site.xml " + args,
+    )
+
+
+# ugly hack, works only if you have one worker
+def copyLilySite(tenant: str) -> BashOperator:
+    return BashOperator(
+        task_id="copy-lily-site",
+        bash_command="rm -f /tmp/" + tenant + "/lily-site.xml && mkdir -p /tmp/" + tenant + " && lily fs -get /lily/tenant/company1/system-config/lily-site.xml /tmp/" + tenant + "/lily-site.xml",
     )
 
 
@@ -52,18 +60,22 @@ with DAG(
         catchup=False,
         tags=["company1"],
 ) as dag:
-    # t1, t2 and t3 are examples of tasks created by instantiating operators
+
+    tenant = "company1"
+
+    copyLilySite = copyLilySite(tenant)
     itxBatchAugmentation = lilyCommand("itx-batch-augmentation")
 
     tasks = []
     for dnaEntityType in ["CUSTOMER", "CANDIDATE", "DEVICE"]:
-        dnaItxBatchCalc = lilyCommand("dna-itx-batch-calc", dnaEntityType)
-        dnaEntityBatchCalc = lilyCommand("dna-entity-batch-calc", dnaEntityType)
-        itxViewBatchCalc = lilyCommand("itx-view-batch-calc", dnaEntityType)
-        setMembershipCalc = lilyCommand("set-membership-calc", dnaEntityType)
-        setBatchCalc = lilyCommand("set-batch-calc", dnaEntityType)
-        dnaItxBatchCalc >> dnaEntityBatchCalc >> itxViewBatchCalc >> setMembershipCalc >> setBatchCalc
+        dnaItxBatchCalc = lilyCommand(tenant, "dna-itx-batch-calc", dnaEntityType)
+        dnaEntityBatchCalc = lilyCommand(tenant, "dna-entity-batch-calc", dnaEntityType)
+        itxViewBatchCalc = lilyCommand(tenant, "itx-view-batch-calc", dnaEntityType)
+        setMembershipCalc = lilyCommand(tenant, "set-membership-calc", dnaEntityType)
+        dnaSetBatchCalc = lilyCommand(tenant, "dna-set-batch-calc", dnaEntityType)
+        dnaItxBatchCalc >> dnaEntityBatchCalc >> itxViewBatchCalc >> setMembershipCalc >> dnaSetBatchCalc
         tasks.append(dnaItxBatchCalc)
 
-    itxBatchAugmentation >> tasks
+    copyLilySite >> itxBatchAugmentation >> tasks
 
+# lily itx-batch-augmentation -conf /lily/tenant/company1/system-config/lily-site.xml
