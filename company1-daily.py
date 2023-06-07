@@ -65,5 +65,5 @@ with DAG(
         dnaEntityBatchCalc >> dnaEntityBatchCalc >> itxViewBatchCalc >> setMembershipCalc >> setBatchCalc
         tasks.append(dnaItxBatchCalc)
 
-    itxBatchAugmentation >> startTasks
+    itxBatchAugmentation >> tasks
 
