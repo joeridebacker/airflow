@@ -62,7 +62,7 @@ with DAG(
         itxViewBatchCalc = lilyCommand("itx-view-batch-calc", dnaEntityType)
         setMembershipCalc = lilyCommand("set-membership-calc", dnaEntityType)
         setBatchCalc = lilyCommand("set-batch-calc", dnaEntityType)
-        dnaEntityBatchCalc >> dnaEntityBatchCalc >> itxViewBatchCalc >> setMembershipCalc >> setBatchCalc
+        dnaItxBatchCalc >> dnaEntityBatchCalc >> itxViewBatchCalc >> setMembershipCalc >> setBatchCalc
         tasks.append(dnaItxBatchCalc)
 
     itxBatchAugmentation >> tasks
