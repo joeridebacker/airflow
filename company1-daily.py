@@ -64,7 +64,7 @@ with DAG(
     tenant = "company1"
 
     copyLilySite = copyLilySite(tenant)
-    itxBatchAugmentation = lilyCommand("itx-batch-augmentation")
+    itxBatchAugmentation = lilyCommand(tenant, "itx-batch-augmentation")
 
     tasks = []
     for dnaEntityType in ["CUSTOMER", "CANDIDATE", "DEVICE"]:
