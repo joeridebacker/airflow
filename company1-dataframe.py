@@ -9,11 +9,10 @@ from airflow.operators.bash import BashOperator
 
 
 def lilyCommand(tenant: str, command: str, dnaEntityType: str = None, arguments: str = None) -> BashOperator:
+    task_id = command
     if dnaEntityType is None:
-        task_id = command
         args = ""
     else:
-        task_id = dnaEntityType + "-" + command
         args = "--dna-entity-type " + dnaEntityType
 
     if not arguments is None:
