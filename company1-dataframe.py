@@ -57,7 +57,7 @@ with DAG(
             # 'sla_miss_callback': yet_another_function, # or list of functions
             # 'trigger_rule': 'all_success'
         },
-        description="Company1-daily",
+        description="Company1-dataframe",
         schedule=None,
         start_date=datetime(2023, 6, 6),
         catchup=False,
