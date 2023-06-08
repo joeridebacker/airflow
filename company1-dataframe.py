@@ -69,9 +69,9 @@ with DAG(
     dataframeExecute = lilyCommand(tenant,
                                    "data-frame-execute",
                                    "{{ dag_run.conf['dna-entity-type'] }}",
-                                   "--cr service:svc:69115adf-97c2-4bb4-837f-3e357ffd230d " +
+                                   "--cr {{ dag_run.conf['credentials'] }} " +
                                    "--name {{ dag_run.conf['dataframe-name'] }}")
 
     copyLilySite >> dataframeExecute
 
-# {"dna-entity-type": "CUSTOMER", "dataframe-name": "BasicDataframeAll"}
+# {"dna-entity-type": "CUSTOMER", "dataframe-name": "BasicDataframeAll", "credentials": "service:svc:69115adf-97c2-4bb4-837f-3e357ffd230d"}
