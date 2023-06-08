@@ -74,3 +74,4 @@ with DAG(
 
     copyLilySite >> dataframeExecute
 
+# {"dna-entity-type": "CUSTOMER", "dataframe-name": "BasicDataframeAll"}
