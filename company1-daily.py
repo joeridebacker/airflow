@@ -18,15 +18,7 @@ def lilyCommand(tenant: str, command: str, dnaEntityType: str = None) -> BashOpe
 
     return BashOperator(
         task_id=task_id,
-        bash_command="lily " + command + " -conf /tmp/" + tenant + "/lily-site.xml " + args,
-    )
-
-
-# ugly hack, works only if you have one worker
-def copyLilySite(tenant: str) -> BashOperator:
-    return BashOperator(
-        task_id="copy-lily-site",
-        bash_command="rm -f /tmp/" + tenant + "/lily-site.xml && mkdir -p /tmp/" + tenant + " && lily fs -get /lily/tenant/company1/system-config/lily-site.xml /tmp/" + tenant + "/lily-site.xml",
+        bash_command="/opt/ngdata/scripts/lily-wrapper.sh " + tenant + " " + command + " " + args,
     )
 
 
@@ -63,7 +55,6 @@ with DAG(
 
     tenant = "company1"
 
-    copyLilySite = copyLilySite(tenant)
     itxBatchAugmentation = lilyCommand(tenant, "itx-batch-augmentation")
 
     tasks = []
@@ -76,6 +67,6 @@ with DAG(
         dnaItxBatchCalc >> dnaEntityBatchCalc >> itxViewBatchCalc >> setMembershipCalc >> dnaSetBatchCalc
         tasks.append(dnaItxBatchCalc)
 
-    copyLilySite >> itxBatchAugmentation >> tasks
+    itxBatchAugmentation >> tasks
 
 # lily itx-batch-augmentation -conf /lily/tenant/company1/system-config/lily-site.xml

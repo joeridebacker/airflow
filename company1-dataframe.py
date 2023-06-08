@@ -15,20 +15,12 @@ def lilyCommand(tenant: str, command: str, dnaEntityType: str = None, arguments:
     else:
         args = "--dna-entity-type " + dnaEntityType
 
-    if not arguments is None:
+    if arguments is not None:
         args = args + " " + arguments
 
     return BashOperator(
         task_id=task_id,
-        bash_command="lily " + command + " -conf /tmp/" + tenant + "/lily-site.xml " + args,
-    )
-
-
-# ugly hack, works only if you have one worker
-def copyLilySite(tenant: str) -> BashOperator:
-    return BashOperator(
-        task_id="copy-lily-site",
-        bash_command="rm -f /tmp/" + tenant + "/lily-site.xml && mkdir -p /tmp/" + tenant + " && lily fs -get /lily/tenant/company1/system-config/lily-site.xml /tmp/" + tenant + "/lily-site.xml",
+        bash_command="/opt/ngdata/scripts/lily-wrapper.sh " + tenant + " " + command + " " + args,
     )
 
 
@@ -62,16 +54,12 @@ with DAG(
         catchup=False,
         tags=["company1"],
 ) as dag:
-
     tenant = "company1"
 
-    copyLilySite = copyLilySite(tenant)
     dataframeExecute = lilyCommand(tenant,
                                    "data-frame-execute",
                                    "{{ dag_run.conf['dna-entity-type'] }}",
                                    "--cr {{ dag_run.conf['credentials'] }} " +
                                    "--name {{ dag_run.conf['dataframe-name'] }}")
-
-    copyLilySite >> dataframeExecute
 
 # {"dna-entity-type": "CUSTOMER", "dataframe-name": "BasicDataframeAll", "credentials": "service:svc:69115adf-97c2-4bb4-837f-3e357ffd230d"}
