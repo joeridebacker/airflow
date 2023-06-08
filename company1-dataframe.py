@@ -20,7 +20,7 @@ def lilyCommand(tenant: str, command: str, dnaEntityType: str = None, arguments:
 
     return BashOperator(
         task_id=task_id,
-        bash_command="/opt/ngdata/scripts/lily-wrapper.sh " + tenant + " " + command + " " + args,
+        bash_command="/opt/ngdata/scripts/lily_wrapper.sh " + tenant + " " + command + " " + args,
     )
 
 
@@ -62,4 +62,4 @@ with DAG(
                                    "--cr {{ dag_run.conf['credentials'] }} " +
                                    "--name {{ dag_run.conf['dataframe-name'] }}")
 
-# {"dna-entity-type": "CUSTOMER", "dataframe-name": "BasicDataframeAll", "credentials": "service:svc:69115adf-97c2-4bb4-837f-3e357ffd230d"}
+# {"dna-entity-type": "CUSTOMER", "dataframe-name": "BasicDataframeAll", "credentials": "service:svc:0aca67b1-c161-4132-a5a4-d8a44e803984"}

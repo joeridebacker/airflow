@@ -18,7 +18,7 @@ def lilyCommand(tenant: str, command: str, dnaEntityType: str = None) -> BashOpe
 
     return BashOperator(
         task_id=task_id,
-        bash_command="/opt/ngdata/scripts/lily-wrapper.sh " + tenant + " " + command + " " + args,
+        bash_command="/opt/ngdata/scripts/lily_wrapper.sh " + tenant + " " + command + " " + args,
     )
 
 
