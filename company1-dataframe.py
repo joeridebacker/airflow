@@ -69,9 +69,9 @@ with DAG(
     copyLilySite = copyLilySite(tenant)
     dataframeExecute = lilyCommand(tenant,
                                    "data-frame-execute",
-                                   "{{ dag_run.conf['dnaEntityType'] }}",
+                                   "{{ dag_run.conf['dna-entity-type'] }}",
                                    "--cr service:svc:69115adf-97c2-4bb4-837f-3e357ffd230d " +
-                                   "--name {{ dag_run.conf['dataframeName'] }}")
+                                   "--name {{ dag_run.conf['dataframe-name'] }}")
 
     copyLilySite >> dataframeExecute
 
