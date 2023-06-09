@@ -8,15 +8,13 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 
 
-def lilyCommand(tenant: str, command: str, dnaEntityType: str = None, arguments: str = None) -> BashOperator:
-    task_id = command
+def lilyCommand(tenant: str, command: str, dnaEntityType: str = None) -> BashOperator:
     if dnaEntityType is None:
+        task_id = command
         args = ""
     else:
+        task_id = dnaEntityType + "-" + command
         args = "--dna-entity-type " + dnaEntityType
-
-    if arguments is not None:
-        args = args + " " + arguments
 
     return BashOperator(
         task_id=task_id,
@@ -25,7 +23,7 @@ def lilyCommand(tenant: str, command: str, dnaEntityType: str = None, arguments:
 
 
 with DAG(
-        "Company1-dataframe",
+        "Company2-daily",
         # These args will get passed on to each operator
         # You can override them on a per-task basis during operator initialization
         default_args={
@@ -48,21 +46,27 @@ with DAG(
             # 'sla_miss_callback': yet_another_function, # or list of functions
             # 'trigger_rule': 'all_success'
         },
-        description="Company1-dataframe",
-        schedule=None,
+        description="Company2-daily",
+        schedule=timedelta(days=1),
         start_date=datetime(2023, 6, 6),
         catchup=False,
         tags=["company1"],
 ) as dag:
-    tenant = "company1"
 
-    dataframeExecute = lilyCommand(tenant,
-                                   "data-frame-execute",
-                                   "{{ dag_run.conf['dna-entity-type'] }}",
-                                   "--cr {{ dag_run.conf['credentials'] }} " +
-                                   "--name {{ dag_run.conf['dataframe-name'] }}")
+    tenant = "company2"
 
-# {"dna-entity-type": "CUSTOMER", "dataframe-name": "BasicDataframeAll", "credentials": "service:svc:cc9da7a9-aa1e-4ac6-9573-953e162b57b7"}
-# {"dna-entity-type": "CUSTOMER", "dataframe-name": "AdvancedDataFrame", "credentials": "service:svc:cc9da7a9-aa1e-4ac6-9573-953e162b57b7"}
+    itxBatchAugmentation = lilyCommand(tenant, "itx-batch-augmentation")
 
+    tasks = []
+    for dnaEntityType in ["CUSTOMER", "CANDIDATE", "DEVICE"]:
+        dnaItxBatchCalc = lilyCommand(tenant, "dna-itx-batch-calc", dnaEntityType)
+        dnaEntityBatchCalc = lilyCommand(tenant, "dna-entity-batch-calc", dnaEntityType)
+        itxViewBatchCalc = lilyCommand(tenant, "itx-view-batch-calc", dnaEntityType)
+        setMembershipCalc = lilyCommand(tenant, "set-membership-calc", dnaEntityType)
+        dnaSetBatchCalc = lilyCommand(tenant, "dna-set-batch-calc", dnaEntityType)
+        dnaItxBatchCalc >> dnaEntityBatchCalc >> itxViewBatchCalc >> setMembershipCalc >> dnaSetBatchCalc
+        tasks.append(dnaItxBatchCalc)
 
+    itxBatchAugmentation >> tasks
+
+# lily itx-batch-augmentation -conf /lily/tenant/company1/system-config/lily-site.xml
