@@ -8,7 +8,7 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 
 
-def lilyCommand(tenant: str, command: str, dnaEntityType: str = None) -> BashOperator:
+def lilyCommand(tenant: str, command: str, pool_slots: int = 1, dnaEntityType: str = None) -> BashOperator:
     if dnaEntityType is None:
         task_id = command
         args = ""
@@ -18,6 +18,7 @@ def lilyCommand(tenant: str, command: str, dnaEntityType: str = None) -> BashOpe
 
     return BashOperator(
         task_id=task_id,
+        pool_slots=pool_slots,
         bash_command="/opt/ngdata/scripts/lily_wrapper.sh " + tenant + " " + command + " " + args,
     )
 
@@ -55,15 +56,15 @@ with DAG(
 
     tenant = "company1"
 
-    itxBatchAugmentation = lilyCommand(tenant, "itx-batch-augmentation")
+    itxBatchAugmentation = lilyCommand(tenant, "itx-batch-augmentation", 128)
 
     tasks = []
     for dnaEntityType in ["CUSTOMER", "CANDIDATE", "DEVICE"]:
-        dnaItxBatchCalc = lilyCommand(tenant, "dna-itx-batch-calc", dnaEntityType)
-        dnaEntityBatchCalc = lilyCommand(tenant, "dna-entity-batch-calc", dnaEntityType)
-        itxViewBatchCalc = lilyCommand(tenant, "itx-view-batch-calc", dnaEntityType)
-        setMembershipCalc = lilyCommand(tenant, "set-membership-calc", dnaEntityType)
-        dnaSetBatchCalc = lilyCommand(tenant, "dna-set-batch-calc", dnaEntityType)
+        dnaItxBatchCalc = lilyCommand(tenant, "dna-itx-batch-calc", 65, dnaEntityType)
+        dnaEntityBatchCalc = lilyCommand(tenant, "dna-entity-batch-calc", 60, dnaEntityType)
+        itxViewBatchCalc = lilyCommand(tenant, "itx-view-batch-calc", 2, dnaEntityType)
+        setMembershipCalc = lilyCommand(tenant, "set-membership-calc", 2, dnaEntityType)
+        dnaSetBatchCalc = lilyCommand(tenant, "dna-set-batch-calc", 2, dnaEntityType)
         dnaItxBatchCalc >> dnaEntityBatchCalc >> itxViewBatchCalc >> setMembershipCalc >> dnaSetBatchCalc
         tasks.append(dnaItxBatchCalc)
 

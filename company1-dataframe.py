@@ -62,7 +62,7 @@ with DAG(
                                    "--cr {{ dag_run.conf['credentials'] }} " +
                                    "--name {{ dag_run.conf['dataframe-name'] }}")
 
-# {"dna-entity-type": "CUSTOMER", "dataframe-name": "BasicDataframeAll", "credentials": "service:svc:cc9da7a9-aa1e-4ac6-9573-953e162b57b7"}
+# {"dna-entity-type": "CUSTOMER", "dataframe-name": "BasicDataframeAll", "credentials": "service:svc:32164433-0ed6-40b6-8a30-5c0b35ef23cc"}
 # {"dna-entity-type": "CUSTOMER", "dataframe-name": "AdvancedDataFrame", "credentials": "service:svc:cc9da7a9-aa1e-4ac6-9573-953e162b57b7"}
 
 
