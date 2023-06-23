@@ -18,7 +18,7 @@ def lilyCommand(tenant: str, command: str, pool_slots: int = 1, dna_entity_type:
         args = "--dna-entity-type " + dna_entity_type
 
     if memory_requests is None:
-        memory_requests = "512Mi"
+        memory_requests = "2048Mi"
     if memory_limits is None:
         memory_limits = memory_requests
 
