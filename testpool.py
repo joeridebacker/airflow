@@ -6,6 +6,7 @@ from airflow import DAG
 
 # Operators; we need this to operate!
 from airflow.operators.bash import BashOperator
+
 with DAG(
         "testpools",
         default_args={
@@ -22,8 +23,6 @@ with DAG(
         catchup=False,
         tags=["testpool"],
 ) as dag:
-
-
     t1 = BashOperator(
         task_id="t1-1",
         bash_command="sleep 10",
@@ -64,7 +63,5 @@ with DAG(
         bash_command="sleep 10",
         pool_slots=128
     )
-
-
 
     t1 >> [t2, t3, t4, t5, t6, t7, t8]

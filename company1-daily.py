@@ -8,44 +8,39 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 
 
-def lilyCommand(tenant: str, command: str, pool_slots: int = 1, dnaEntityType: str = None) -> BashOperator:
-    if dnaEntityType is None:
+def lilyCommand(tenant: str, command: str, pool_slots: int = 1, dna_entity_type: str = None, memory_requests: str = None,
+                memory_limits: str = None) -> BashOperator:
+    if dna_entity_type is None:
         task_id = command
         args = ""
     else:
-        task_id = dnaEntityType + "-" + command
-        args = "--dna-entity-type " + dnaEntityType
+        task_id = dna_entity_type + "-" + command
+        args = "--dna-entity-type " + dna_entity_type
+
+    if memory_requests is None:
+        memory_requests = "512Mi"
+    if memory_limits is None:
+        memory_limits = memory_requests
 
     return BashOperator(
         task_id=task_id,
         pool_slots=pool_slots,
-        bash_command="/opt/ngdata/scripts/lily_wrapper.sh " + tenant + " " + command + " " + args,
+        bash_command="/opt/ngdata/scripts/lily.sh " + tenant + " " + command + " " + args,
+        executor_config={
+            "KubernetesExecutor": {"request_memory": memory_requests,
+                                   "limit_memory": memory_limits}},
     )
 
 
 with DAG(
         "Company1-daily",
-        # These args will get passed on to each operator
-        # You can override them on a per-task basis during operator initialization
         default_args={
             "depends_on_past": False,
             "email": ["airflow@example.com"],
             "email_on_failure": False,
             "email_on_retry": False,
             "retries": 1,
-            "retry_delay": timedelta(minutes=5),
-            # 'queue': 'bash_queue',
-            # 'pool': 'backfill',
-            # 'priority_weight': 10,
-            # 'end_date': datetime(2016, 1, 1),
-            # 'wait_for_downstream': False,
-            # 'sla': timedelta(hours=2),
-            # 'execution_timeout': timedelta(seconds=300),
-            # 'on_failure_callback': some_function, # or list of functions
-            # 'on_success_callback': some_other_function, # or list of functions
-            # 'on_retry_callback': another_function, # or list of functions
-            # 'sla_miss_callback': yet_another_function, # or list of functions
-            # 'trigger_rule': 'all_success'
+            "retry_delay": timedelta(minutes=5)
         },
         description="Company1-daily",
         schedule=timedelta(days=1),
@@ -69,5 +64,3 @@ with DAG(
         tasks.append(dnaItxBatchCalc)
 
     itxBatchAugmentation >> tasks
-
-# lily itx-batch-augmentation -conf /lily/tenant/company1/system-config/lily-site.xml
